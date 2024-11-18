@@ -38,7 +38,7 @@ const SubHeader = () => {
 
     if (path.includes("/outreach")) {
       return (
-        <div className="bg-gray-50 p-4 rounded-md shadow-md">
+        <div className="bg-gray-100 p-4 rounded-md shadow-md">
           <ul className="flex space-x-6">
             {tabs.map((tab) => (
               <li

@@ -10,6 +10,7 @@ import DashBoard from "./pages/DashBoard";
 import Header from "./components/Header";
 import { chechAuth } from "./store/auth";
 import SubHeader from "./components/SubHeader";
+import Sequences from "./pages/Sequences";
 
 const App = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -47,6 +48,14 @@ const App = () => {
           element={
             <Check_Auth isAuthenticated={isAuthenticated}>
               <DashBoard />
+            </Check_Auth>
+          }
+        />
+        <Route
+          path="/outreach"
+          element={
+            <Check_Auth isAuthenticated={isAuthenticated}>
+              <Sequences />
             </Check_Auth>
           }
         />

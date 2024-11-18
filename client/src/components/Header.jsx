@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -10,7 +11,7 @@ import {
   MenuItem,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import downlaod from "./../assets/download.png";
 import { navigation } from "./../config/navigation";
 
@@ -19,19 +20,33 @@ function classNames(...classes) {
 }
 
 const Header = () => {
-  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [activeTab, setActiveTab] = useState("");
   const [expandedTab, setExpandedTab] = useState(null);
+  const location = useLocation();
 
   const handleTabClick = (tabName) => {
-    setActiveTab(tabName); 
+    setActiveTab(tabName);
   };
 
   const handleToggleSubHeader = (tabName) => {
     setExpandedTab(expandedTab === tabName ? null : tabName);
   };
 
+  useEffect(() => {
+    // Find the tab based on the current URL path
+    const currentTab = navigation.find(
+      (item) =>
+        location.pathname === item.href ||
+        (item.subItems &&
+          item.subItems.some((subItem) => location.pathname === subItem.path))
+    );
+
+    // Set the active tab
+    setActiveTab(currentTab ? currentTab.name : "OutReach");
+  }, [location.pathname]);
+
   return (
-    <Disclosure as="nav" className="bg-white shadow-md">
+    <Disclosure as="nav" className="bg-white ">
       <div className="mx-auto max-w-8xl px-2 sm:px-6 lg:px-10">
         <div className="relative flex h-16 items-center justify-between">
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -63,7 +78,7 @@ const Header = () => {
                     onClick={() => handleTabClick(item.name)}
                     className={classNames(
                       item.name === activeTab
-                        ? "bg-gray-300 text-black"
+                        ? "bg-gray-100 text-black"
                         : "text-gray-600 hover:bg-gray-200 hover:text-gray-900",
                       "rounded-md px-3 py-2 text-[18px] font-medium flex flex-row items-center gap-3 "
                     )}
@@ -92,7 +107,7 @@ const Header = () => {
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">Open user menu</span>
                   <img
-                    alt=""
+                    alt="Profile"
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                     className="h-8 w-8 rounded-full"
                   />
@@ -143,7 +158,7 @@ const Header = () => {
                     as={Link}
                     to={item.href}
                     onClick={() => {
-                      handleTabClick(item.name); 
+                      handleTabClick(item.name);
                       handleToggleSubHeader(item.name);
                     }}
                     aria-current={item.name === activeTab ? "page" : undefined}
