@@ -1,248 +1,240 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
-  Background,
   ReactFlow,
   useNodesState,
   useEdgesState,
-  addEdge,
-  useReactFlow,
+  Background,
   ReactFlowProvider,
-  ConnectionLineType,
+  Position,
+  Handle,
   Controls,
   MiniMap,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import SourceBlockModal from "./SourceBlockModal";
+import { useSelector } from "react-redux";
+import { FaUserPlus } from "react-icons/fa";
 
-const PlusButton = ({ onClick, position }) => (
+const CustomNode = ({ data, id, onNodeClick, selectedLists }) => (
   <div
-    onClick={onClick}
-    style={{
-      width: "20px",
-      height: "20px",
-      backgroundColor: "#4CAF50",
-      color: "white",
-      borderRadius: "50%",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      cursor: "pointer",
-      position: "absolute",
-      zIndex: 10,
-      top: position.y, // Set the position of the button relative to the edge end
-      left: position.x,
-    }}
+    className={`relative p-4 ${
+      data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
+    } rounded-lg w-52 text-center`}
+    onClick={() => onNodeClick(id)}
   >
-    +
+    {data.isLastNode ? (
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <button
+          className="w-8 h-8 border-2 border-blue-400 text-blue-400 rounded flex items-center justify-center hover:bg-blue-50 transition-colors"
+          onClick={data.onAdd}
+        >
+          <span className="text-xl leading-none">+</span>
+        </button>
+      </div>
+    ) : (
+      <>
+        <Handle type="target" position={Position.Top} />
+        <div className="relative mx-auto flex justify-center items-center">
+          {id === "1" && selectedLists.length > 0 ? (
+            <div className="flex items-center space-x-2">
+              <FaUserPlus className="text-red-500" size={20} />
+              <ul className="text-left">
+                {selectedLists.map((item, index) => (
+                  <li key={index} className="text-sm">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div>{data.label}</div>
+          )}
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </>
+    )}
   </div>
 );
 
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY }) => {
+  const edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+  return (
+    <g>
+      <path
+        id={id}
+        className="react-flow__edge-path"
+        d={edgePath}
+        strokeWidth={2}
+        stroke="#B8C4CE"
+        style={{ pointerEvents: "all" }}
+      />
+    </g>
+  );
+};
+
 const initialNodes = [
   {
-    id: "0",
-    type: "input",
-    data: { label: "Root Node" },
-    position: { x: 0, y: 50 },
+    id: "1",
+    type: "custom",
+    data: {
+      label: "+ Add Lead Source",
+      isLastNode: false,
+    },
+    position: { x: 250, y: 50 },
   },
   {
-    id: "1",
-    type: "default",
+    id: "2",
+    type: "custom",
     data: {
-      label: "Node 1",
-      hasExtraEdge: true,
+      label: "Sequence Start Point",
+      isLastNode: true,
+      isStartPoint: true,
     },
-    position: { x: 0, y: 150 },
+    position: { x: 250, y: 170 },
   },
 ];
 
 const initialEdges = [
   {
-    id: "edge-0-1",
-    source: "0",
-    target: "1",
-    type: "smoothstep",
+    id: "edge-1-2",
+    source: "1",
+    target: "2",
+    type: "custom",
     animated: true,
   },
 ];
 
-let id = 2;
-const getId = () => `${id++}`;
-const nodeOrigin = [0.5, 0];
-
-const AddNodeOnEdgeDrop = () => {
-  const reactFlowWrapper = useRef(null);
+const SequenceFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const { screenToFlowPosition } = useReactFlow();
-  const [lastNodePosition, setLastNodePosition] = useState({ x: 0, y: 0 });
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [clickedNodes, setClickedNodes] = useState({}); // Track node clicks
+  const { selectedLists } = useSelector((state) => state.reactFlow);
 
-  const onConnect = useCallback(
-    (connection) => {
-      setEdges((eds) =>
-        addEdge({ ...connection, type: "smoothstep", animated: true }, eds)
-      );
-    },
-    [setEdges]
-  );
-
-  const addNode = (parentNodeId) => {
-    const parentNode = nodes.find((node) => node.id === parentNodeId);
-
-    if (parentNode) {
-      const newNode = {
-        id: getId(),
-        type: "default",
-        position: {
-          x: parentNode.position.x,
-          y: parentNode.position.y + 100,
+  const addNode = useCallback(() => {
+    setNodes((nds) => {
+      const updatedNodes = nds.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          isLastNode: false,
         },
-        data: { label: `Node ${id}` },
-        origin: nodeOrigin,
+      }));
+
+      const lastNode = nds[nds.length - 1];
+      const newNodePosition = {
+        x: lastNode.position.x,
+        y: lastNode.position.y + 120,
       };
 
-      // Add new node
-      setNodes((nds) => [...nds, newNode]);
-
-      // Create an edge from parent to new node
-      const newEdge = {
-        id: `edge-${parentNodeId}-${newNode.id}`,
-        source: parentNodeId,
-        target: newNode.id,
-        type: "smoothstep",
-        animated: true,
+      const newNode = {
+        id: `node-${nds.length + 1}`,
+        type: "custom",
+        data: {
+          label: `Step ${nds.length + 1}`,
+          isLastNode: true,
+          onAdd: addNode,
+        },
+        position: newNodePosition,
       };
 
-      setEdges((eds) => [...eds, newEdge]);
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `edge-${lastNode.id}-${newNode.id}`,
+          source: lastNode.id,
+          target: newNode.id,
+          type: "custom",
+          animated: true,
+        },
+      ]);
 
-      // Update last node position for button placement
-      setLastNodePosition({ x: newNode.position.x + 100, y: newNode.position.y });
-    }
-  };
+      return [...updatedNodes, newNode];
+    });
+  }, [setNodes, setEdges]);
 
-  const onConnectEnd = useCallback(
-    (event) => {
-      const { clientX, clientY } =
-        event.type.includes("touch") ? event.changedTouches[0] : event;
-
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-
-      if (reactFlowBounds) {
-        const flowPosition = screenToFlowPosition({
-          x: clientX - reactFlowBounds.left,
-          y: clientY - reactFlowBounds.top,
-        });
-
-        const sourceNode = nodes.find(
-          (node) =>
-            node.id ===
-            event.target.closest(".react-flow__node")?.getAttribute("data-id")
-        );
-
-        const newNode = {
-          id: getId(),
-          type: "default",
-          position: sourceNode
-            ? {
-                x: sourceNode.position.x,
-                y: sourceNode.position.y + 100,
-              }
-            : flowPosition,
-          data: { label: `Node ${id}` },
-          origin: nodeOrigin,
-        };
-
-        setNodes((nds) => [...nds, newNode]);
-        setLastNodePosition({
-          x: newNode.position.x + 100,
-          y: newNode.position.y,
-        });
+  const onNodeClick = (id) => {
+    setClickedNodes((prevState) => {
+      const updatedClickedNodes = {
+        ...prevState,
+        [id]: (prevState[id] || 0) + 1, // Increment click count
+      };
+  console.log(id , "Clicked nodes");
+  
+      // Trigger the alert on the second click
+      if (id === "node-3" ) {
+        alert("You clicked this node a second time!");
       }
-    },
-    [screenToFlowPosition, setNodes, nodes]
-  );
+  
+      return updatedClickedNodes;
+    });
+  
+    // Open the modal for Node 1
+    if (id === "1") {
+      setIsModalOpen(true);
+    }
+  
+    console.log(id, 'ID'); // Display the clicked ID
+  };
+  
 
   useEffect(() => {
-    // Update position of the last node when nodes change
-    if (nodes.length > 0) {
-      const lastNode = nodes[nodes.length - 1];
-      setLastNodePosition({ x: lastNode.position.x + 100, y: lastNode.position.y });
-    }
-  }, [nodes]);
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onAdd: addNode,
+        },
+      }))
+    );
+  }, [addNode, setNodes]);
+
+  const nodeTypes = {
+    custom: (props) => (
+      <CustomNode
+        {...props}
+        onNodeClick={onNodeClick}
+        selectedLists={selectedLists}
+      />
+    ),
+  };
+
+  const edgeTypes = {
+    custom: CustomEdge,
+  };
 
   return (
-    <div style={{ height: "50vh", width: "100%" }}>
-      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}>
-        <button
-          onClick={() => addNode("0")}
-          style={{
-            padding: "5px 10px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Add Node Under Root
-        </button>
-        <button
-          onClick={() => addNode("1")}
-          style={{
-            padding: "5px 10px",
-            backgroundColor: "#2196F3",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            marginLeft: "10px",
-          }}
-        >
-          Add Node Under Node 1
-        </button>
-      </div>
-      <div ref={reactFlowWrapper} style={{ height: "100%", width: "100%" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectEnd={onConnectEnd}
-          connectionLineType={ConnectionLineType.Smoothstep}
-          fitView
-          fitViewOptions={{ padding: 2 }}
-          nodeOrigin={nodeOrigin}
-        >
-          <Background />
-          <Controls />
-          <MiniMap />
-          {edges.length > 0 &&
-            edges.map((edge) => {
-              // Find the target node of the last edge
-              if (edge.target === nodes[nodes.length - 1]?.id) {
-                const targetNode = nodes.find((node) => node.id === edge.target);
-                const edgeEnd = {
-                  x: targetNode?.position.x + 100, // Offset for button position
-                  y: targetNode?.position.y,
-                };
-                return (
-                  <PlusButton
-                    key={`plus-${edge.id}`}
-                    onClick={() => addNode(edge.target)}
-                    position={edgeEnd}
-                  />
-                );
-              }
-              return null;
-            })}
-        </ReactFlow>
-      </div>
+    <div className="w-full h-96 bg-gray-50">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        defaultEdgeOptions={{
+          type: "custom",
+        }}
+      >
+        <Controls />
+        <MiniMap />
+        <Background />
+      </ReactFlow>
+
+      {isModalOpen && (
+        <SourceBlockModal onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };
 
 const FlowWrapper = () => (
   <ReactFlowProvider>
-    <AddNodeOnEdgeDrop />
+    <SequenceFlow />
   </ReactFlowProvider>
 );
 
