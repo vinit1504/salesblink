@@ -9,14 +9,15 @@ import {
   Handle,
   Controls,
   MiniMap,
-  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import SourceBlockModal from "./SourceBlockModal";
+import AddBlocksPopup from "./AddBlocksPopup";
 import { useSelector } from "react-redux";
 import { FaUserPlus } from "react-icons/fa";
+import { HiMail } from "react-icons/hi"; // Added email icon
 
-const CustomNode = ({ data, id, onNodeClick, selectedLists }) => (
+const CustomNode = ({ data, id, onNodeClick, selectedLists , templateName}) => (
   <div
     className={`relative p-4 ${
       data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
@@ -47,6 +48,12 @@ const CustomNode = ({ data, id, onNodeClick, selectedLists }) => (
                 ))}
               </ul>
             </div>
+          ) : id === "3" ? ( // Check for third node
+            <div className="flex items-center space-x-2">
+              <HiMail className="text-blue-500" size={20} />
+              email
+              <span>{templateName}</span>
+            </div>
           ) : (
             <div>{data.label}</div>
           )}
@@ -56,22 +63,6 @@ const CustomNode = ({ data, id, onNodeClick, selectedLists }) => (
     )}
   </div>
 );
-
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY }) => {
-  const edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
-  return (
-    <g>
-      <path
-        id={id}
-        className="react-flow__edge-path"
-        d={edgePath}
-        strokeWidth={2}
-        stroke="#B8C4CE"
-        style={{ pointerEvents: "all" }}
-      />
-    </g>
-  );
-};
 
 const initialNodes = [
   {
@@ -88,10 +79,27 @@ const initialNodes = [
     type: "custom",
     data: {
       label: "Sequence Start Point",
-      isLastNode: true,
-      isStartPoint: true,
+      isLastNode: false,
     },
     position: { x: 250, y: 170 },
+  },
+  {
+    id: "3", // Added third node
+    type: "custom",
+    data: {
+      label: "Cold Email",
+      isLastNode: false,
+    },
+    position: { x: 250, y: 290 },
+  },
+  {
+    id: "4", // This becomes the last node with plus button
+    type: "custom",
+    data: {
+      label: "Add Next Step",
+      isLastNode: true,
+    },
+    position: { x: 250, y: 450 },
   },
 ];
 
@@ -103,15 +111,29 @@ const initialEdges = [
     type: "custom",
     animated: true,
   },
+  {
+    id: "edge-2-3",
+    source: "2",
+    target: "3",
+    type: "custom",
+    animated: true,
+  },
+  {
+    id: "edge-3-4",
+    source: "3",
+    target: "4",
+    type: "custom",
+    animated: true,
+  },
 ];
 
 const SequenceFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [clickedNodes, setClickedNodes] = useState({}); // Track node clicks
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { selectedLists } = useSelector((state) => state.reactFlow);
+  const { templateName } = useSelector((state) => state.emailList);
 
   const addNode = useCallback(() => {
     setNodes((nds) => {
@@ -156,29 +178,14 @@ const SequenceFlow = () => {
   }, [setNodes, setEdges]);
 
   const onNodeClick = (id) => {
-    setClickedNodes((prevState) => {
-      const updatedClickedNodes = {
-        ...prevState,
-        [id]: (prevState[id] || 0) + 1, // Increment click count
-      };
-  console.log(id , "Clicked nodes");
-  
-      // Trigger the alert on the second click
-      if (id === "node-3" ) {
-        alert("You clicked this node a second time!");
-      }
-  
-      return updatedClickedNodes;
-    });
-  
-    // Open the modal for Node 1
+    console.log(id, "Node clicked");
+    
     if (id === "1") {
       setIsModalOpen(true);
+    } else if (id === "3") { // Changed to check for node "3"
+      setIsPopupOpen(true);
     }
-  
-    console.log(id, 'ID'); // Display the clicked ID
   };
-  
 
   useEffect(() => {
     setNodes((nds) =>
@@ -198,12 +205,9 @@ const SequenceFlow = () => {
         {...props}
         onNodeClick={onNodeClick}
         selectedLists={selectedLists}
+        templateName={templateName}
       />
     ),
-  };
-
-  const edgeTypes = {
-    custom: CustomEdge,
   };
 
   return (
@@ -214,7 +218,6 @@ const SequenceFlow = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         fitView
         defaultEdgeOptions={{
           type: "custom",
@@ -228,6 +231,8 @@ const SequenceFlow = () => {
       {isModalOpen && (
         <SourceBlockModal onClose={() => setIsModalOpen(false)} />
       )}
+
+      <AddBlocksPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
     </div>
   );
 };
