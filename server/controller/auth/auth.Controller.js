@@ -2,8 +2,10 @@ import bcrypt from "bcryptjs";
 import User from "../../model/user.Model.js";
 import jwt from "jsonwebtoken";
 
+// User registration handler
 export const userRegister = async (req, res) => {
   try {
+    // Destructure request body to get user details
     const { username, email, contactNumber, password } = req.body;
 
     // Validate required fields
@@ -15,7 +17,7 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    // Validate email format
+    // Validate email format using regex
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -25,7 +27,7 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    // Validate password length
+    // Validate password length (minimum 6 characters)
     if (password.length < 6) {
       return res.status(400).json({
         message: "Password must be at least 6 characters long",
@@ -34,7 +36,7 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    // Check if email already exists
+    // Check if email already exists in the database
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).json({
@@ -44,7 +46,7 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    // Check if username already exists
+    // Check if username already exists in the database
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
       return res.status(400).json({
@@ -54,20 +56,24 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    // Hash the password
+    // Hash the password using bcrypt before saving to the database
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create and save the user
+    // Create a new user object with the provided data
     const user = new User({
       username,
       email,
       contactNumber,
       password: hashedPassword,
     });
+
+    // Save the user object to the database
     await user.save();
 
-    const { password:_ , ...userWithoutPassword} = user.toObject()
+    // Omit the password from the user object before sending the response
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
+    // Send a success response with the user data (excluding password)
     return res.status(201).json({
       message: "User registered successfully",
       success: true,
@@ -84,9 +90,10 @@ export const userRegister = async (req, res) => {
   }
 };
 
+// User login handler
 export const userLogin = async (req, res) => {
   try {
-    // Destructure the request body to get username/email and password
+    // Destructure request body to get username/email and password
     const { usernameOrEmail, password } = req.body;
 
     // Validate the inputs
@@ -98,12 +105,12 @@ export const userLogin = async (req, res) => {
       });
     }
 
-    // Check if the usernameOrEmail is a valid username or email
+    // Check if the usernameOrEmail exists in the database (either username or email)
     const user = await User.findOne({
       $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
     });
 
-    // If user is not found
+    // If user not found, send an error response
     if (!user) {
       return res.status(400).json({
         message: "User not found with this username/email",
@@ -112,7 +119,7 @@ export const userLogin = async (req, res) => {
       });
     }
 
-    // Compare the password with the hashed password stored in the database
+    // Compare the provided password with the hashed password stored in the database
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({
@@ -122,29 +129,30 @@ export const userLogin = async (req, res) => {
       });
     }
 
-    // Generate a JWT token
+    // Generate a JWT token for authentication
     const token = jwt.sign(
       { userId: user._id, username: user.username, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRATION }
     );
 
-    // Store token in an HTTP-only cookie
+    // Store the token in an HTTP-only cookie for secure authentication
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 3600000,
+      httpOnly: true, // Prevents client-side access to the cookie
+      secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
+      maxAge: 3600000, // Cookie expiration time (1 hour)
     });
 
-    const {password:_ , ...userWithoutPassword} = user.toObject()
+    // Omit the password from the user object before sending the response
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
-    // Send the response back with the token
+    // Send the response with the generated token and user data (excluding password)
     return res.status(200).json({
       message: "Login successful",
       success: true,
       flag: 1,
       token,
-      data:userWithoutPassword
+      data: userWithoutPassword,
     });
   } catch (error) {
     console.error("Error in userLogin:", error);
