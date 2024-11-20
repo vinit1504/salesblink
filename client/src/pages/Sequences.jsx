@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
 import {
   ArrowDownUp,
   ChartColumnDecreasing,
@@ -6,22 +6,31 @@ import {
   Rocket,
   RotateCcw,
 } from "lucide-react";
-import React, { useState } from "react";
 import { FaEdit, FaCheck, FaTimes } from "react-icons/fa";
 import ReactFlows from "./../components/ReactFlows";
 import { useSelector } from "react-redux";
-import axios from "axios";  // Import axios
+import axios from "axios";
 
 const Sequence = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState("Editable Label");
   const [tempText, setTempText] = useState(text);
 
-  // Assuming selectedLists was an array, now we need to convert it into a string
-  const { selectedLists } = useSelector((state) => state.reactFlow);  // Now using selectedLists as a list
-  const { emailTemplate: body } = useSelector((state) => state.emailFollowus);  // Now using body instead of emailTemplate
-  const { sendEmailAs: emailSubject } = useSelector((state) => state.emailFollowus);  // Now using emailSubject
-  const { waitDuration, waitType } = useSelector((state) => state.time);
+  // State for sequence data
+  const [sequenceData, setSequenceData] = useState(null);
+
+  const { selectedLists } = useSelector((state) => state.reactFlow);
+  const { emailTemplate: body } = useSelector((state) => state.emailFollowus);
+  const { sendEmailAs: emailSubject } = useSelector((state) => state.emailFollowus);
+  const { waitDuration } = useSelector((state) => state.time);
+
+  useEffect(() => {
+    // Load sequence data from localStorage on component mount
+    const savedData = localStorage.getItem("sequenceData");
+    if (savedData) {
+      setSequenceData(JSON.parse(savedData));
+    }
+  }, []);
 
   const handleEditClick = () => {
     setTempText(text);
@@ -38,35 +47,42 @@ const Sequence = () => {
   };
 
   const handleSaveAndSubmit = async () => {
-    // Combine waitDuration and waitType into the desired format for time
     const waitDateTime = new Date();
     waitDateTime.setSeconds(waitDateTime.getSeconds() + waitDuration);
-    const time = waitDateTime.toISOString();  // Updated to use "time"
+    const time = waitDateTime.toISOString();
 
-    // If selectedLists is an array, convert it to a comma-separated string
-    const selectedListsString = Array.isArray(selectedLists) ? selectedLists.join(", ") : selectedLists;
+    const selectedListsString = Array.isArray(selectedLists)
+      ? selectedLists.join(", ")
+      : selectedLists;
 
-    // Prepare the data to be sent to the backend as JSON
     const data = {
-      selectedLists: selectedListsString,  // Ensure this is now a string
-      body,  // Body text for the email
-      time,  // Calculated time
-      emailSubject,  // Subject of the email
+      selectedLists: selectedListsString,
+      body,
+      time,
+      emailSubject,
     };
 
-    // Log data (for debugging purposes)
     console.log("Data to be sent:", data);
 
     try {
-      // Make the API call to send the email using axios
       const response = await axios.post(
-        "http://localhost:8080/api/v1/email/send-email", 
-        data,  // Send the data as JSON
-        { headers: { "Content-Type": "application/json" } } // Content-Type set to JSON
+        "http://localhost:8080/api/v1/email/send-email",
+        data,
+        { headers: { "Content-Type": "application/json" } }
       );
 
       console.log("Email sent successfully:", response.data);
       alert("Email sent successfully!");
+
+      // Save sequence data to localStorage after submission
+      const sequence = {
+        selectedLists: selectedListsString,
+        body,
+        time,
+        emailSubject,
+      };
+      setSequenceData(sequence);
+      localStorage.setItem("sequenceData", JSON.stringify(sequence));
     } catch (error) {
       console.error("Error sending email:", error);
       alert("Failed to send email.");
@@ -131,6 +147,15 @@ const Sequence = () => {
       <div className="mt-10 w-11/12 mx-auto">
         <ReactFlows />
       </div>
+
+      {sequenceData && (
+        <div className="mt-5 p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-semibold text-lg mb-2">Saved Sequence:</h3>
+          <pre className="bg-white p-4 rounded-lg border border-gray-300">
+            {JSON.stringify(sequenceData, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };

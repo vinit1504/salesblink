@@ -1,4 +1,5 @@
-import { mongoose } from "mongoose";
+import mongoose from "mongoose";
+
 const sendEmailSchema = new mongoose.Schema(
   {
     time: {
@@ -14,8 +15,12 @@ const sendEmailSchema = new mongoose.Schema(
       required: true,
     },
     selectedLists: {
-      type: String,
+      type: String, // Adjust type if multiple recipients (use Array)
       required: true,
+    },
+    sent: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

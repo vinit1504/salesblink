@@ -35,9 +35,8 @@ const CustomNode = ({
   sendEmailAs
 }) => (
   <div
-    className={`relative p-4 ${
-      data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
-    } rounded-lg w-52 text-center`}
+    className={`relative p-4 ${data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
+      } rounded-lg w-52 text-center`}
     onClick={() => onNodeClick(id)}
   >
     {data.isLastNode ? (
@@ -110,57 +109,9 @@ const CustomNode = ({
   </div>
 );
 
-
-const initialNodes = [
-  {
-    id: "1",
-    type: "custom",
-    data: {
-      label: "+ Add Lead Source",
-      isLastNode: false,
-    },
-    position: { x: 250, y: 50 },
-  },
-  {
-    id: "2",
-    type: "custom",
-    data: {
-      label: "Sequence Start Point",
-      isLastNode: false,
-    },
-    position: { x: 250, y: 170 },
-  },
-  {
-    id: "3",
-    type: "custom",
-    data: {
-      label: "Add Next Step",
-      isLastNode: true,
-    },
-    position: { x: 250, y: 290 },
-  },
-];
-
-const initialEdges = [
-  {
-    id: "edge-1-2",
-    source: "1",
-    target: "2",
-    type: "custom",
-    animated: true,
-  },
-  {
-    id: "edge-2-3",
-    source: "2",
-    target: "3",
-    type: "custom",
-    animated: true,
-  },
-];
-
 const SequenceFlow = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPopupOpen2, setIsPopupOpen2] = useState(false);
@@ -171,11 +122,77 @@ const SequenceFlow = () => {
   const { waitType } = useSelector((state) => state.time);
   const { emailTemplate } = useSelector((state) => state.emailFollowus);
   const { sendEmailAs } = useSelector((state) => state.emailFollowus);
-  // console.log(templateName, "template");
-  // console.log(waitDuration, "duration");
-  // console.log(waitType, "type");
-  console.log(emailTemplate, "emailTemplate");
-  console.log(sendEmailAs, "sendEmailAs");
+
+  // Load nodes and edges from localStorage on page load
+  useEffect(() => {
+    const savedNodes = localStorage.getItem("nodes");
+    const savedEdges = localStorage.getItem("edges");
+
+    if (savedNodes && savedEdges) {
+      setNodes(JSON.parse(savedNodes));
+      setEdges(JSON.parse(savedEdges));
+    } else {
+      // Initial data if nothing is stored in localStorage
+      const initialNodes = [
+        {
+          id: "1",
+          type: "custom",
+          data: {
+            label: "+ Add Lead Source",
+            isLastNode: false,
+          },
+          position: { x: 250, y: 50 },
+        },
+        {
+          id: "2",
+          type: "custom",
+          data: {
+            label: "Sequence Start Point",
+            isLastNode: false,
+          },
+          position: { x: 250, y: 170 },
+        },
+        {
+          id: "3",
+          type: "custom",
+          data: {
+            label: "Add Next Step",
+            isLastNode: true,
+          },
+          position: { x: 250, y: 290 },
+        },
+      ];
+
+      const initialEdges = [
+        {
+          id: "edge-1-2",
+          source: "1",
+          target: "2",
+          type: "custom",
+          animated: true,
+        },
+        {
+          id: "edge-2-3",
+          source: "2",
+          target: "3",
+          type: "custom",
+          animated: true,
+        },
+      ];
+
+      setNodes(initialNodes);
+      setEdges(initialEdges);
+    }
+  }, []);
+
+  // Save nodes and edges to localStorage when they change
+  useEffect(() => {
+    if (nodes.length > 0 && edges.length > 0) {
+      localStorage.setItem("nodes", JSON.stringify(nodes));
+      localStorage.setItem("edges", JSON.stringify(edges));
+    }
+  }, [nodes, edges]);
+
   const addNode = useCallback(() => {
     setNodes((nds) => {
       const updatedNodes = nds.map((node) => ({
@@ -247,10 +264,7 @@ const SequenceFlow = () => {
     setNodes((nds) =>
       nds.map((node) => ({
         ...node,
-        data: {
-          ...node.data,
-          onAdd: addNode,
-        },
+        data: { ...node.data, onAdd: addNode },
       }))
     );
   }, [addNode, setNodes]);
@@ -279,28 +293,16 @@ const SequenceFlow = () => {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
-        defaultEdgeOptions={{
-          type: "custom",
-        }}
       >
         <Controls />
         <MiniMap />
         <Background />
       </ReactFlow>
 
-      {isModalOpen && (
-        <SourceBlockModal onClose={() => setIsModalOpen(false)} />
-      )}
-
-      <AddBlocksPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-      />
+      {isModalOpen && <SourceBlockModal onClose={() => setIsModalOpen(false)} />}
+      <AddBlocksPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       <Time isOpen={isPopupOpen2} onClose={() => setIsPopupOpen2(false)} />
-      <Email2Followup
-        isOpen={isPopupOpen3}
-        onClose={() => setIsPopupOpen3(false)}
-      />
+      <Email2Followup isOpen={isPopupOpen3} onClose={() => setIsPopupOpen3(false)} />
     </div>
   );
 };
