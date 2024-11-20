@@ -5,6 +5,7 @@ import cors from "cors";
 import { DataBaseConnect } from "./database/dataBaseConnection.js";
 
 import authRoutes from "./routes/auth/auth.Routes.js";
+import sequenceRoutes from "./routes/sequence/sequence.Routes.js";
 
 dotenv.config();
 DataBaseConnect();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/email", sequenceRoutes);
 
 app.listen(Port, () => {
   console.log(`Server is running on port ${Port}`);

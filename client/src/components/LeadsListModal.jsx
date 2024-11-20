@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 
 const LeadsListModal = ({ onClose, onInsert }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLists, setSelectedListsState] = useState([]); // local state to hold selected lists
+  const [selectedListsState, setSelectedListsState] = useState([]); // local state to hold selected lists
   const [lists] = useState([
     "sp3887804@gmail.com",
     "vinit15012003@gmail.com",
@@ -16,7 +16,7 @@ const LeadsListModal = ({ onClose, onInsert }) => {
   const dispatch = useDispatch(); // Redux dispatcher
 
   const handleAddList = (list) => {
-    if (!selectedLists.includes(list)) {
+    if (!selectedListsState.includes(list)) {
       setSelectedListsState((prev) => [...prev, list]);
     }
   };
@@ -27,8 +27,8 @@ const LeadsListModal = ({ onClose, onInsert }) => {
 
   const handleInsert = () => {
     // Dispatch to Redux store
-    dispatch(setSelectedLists(selectedLists)); // Correct action dispatch
-    console.log("Selected lists stored in Redux:", selectedLists);
+    dispatch(setSelectedLists(selectedListsState)); // Correct action dispatch with selectedListsState
+    console.log("Selected lists stored in Redux:", selectedListsState);
 
     onClose(); // Close the modal
   };
@@ -94,7 +94,7 @@ const LeadsListModal = ({ onClose, onInsert }) => {
 
               {/* Selected Lists */}
               <div className="border rounded-lg p-2 min-h-[48px]">
-                {selectedLists.map((list) => (
+                {selectedListsState.map((list) => (
                   <div
                     key={list}
                     className="inline-flex items-center bg-gray-100 rounded-md px-3 py-1 m-1"
