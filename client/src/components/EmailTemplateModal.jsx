@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setEmailTemplate } from './../store/emailtemp/emailTemplate'; // Import the setEmailTemplate action

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React, { useState, useCallback, useEffect } from "react";
 import {
   ReactFlow,
@@ -15,9 +17,23 @@ import SourceBlockModal from "./SourceBlockModal";
 import AddBlocksPopup from "./AddBlocksPopup";
 import { useSelector } from "react-redux";
 import { FaUserPlus } from "react-icons/fa";
-import { HiMail } from "react-icons/hi"; // Added email icon
+import { HiMail } from "react-icons/hi";
+import Time from "./Time";
 
-const CustomNode = ({ data, id, onNodeClick, selectedLists , templateName}) => (
+import { FaClock } from "react-icons/fa"; // Import clock icon
+import Email2Followup from "./Email2Followup";
+
+const CustomNode = ({
+  data,
+  id,
+  onNodeClick,
+  selectedLists,
+  templateName,
+  waitDuration,
+  waitType,
+  emailTemplate,
+  sendEmailAs
+}) => (
   <div
     className={`relative p-4 ${
       data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
@@ -48,11 +64,41 @@ const CustomNode = ({ data, id, onNodeClick, selectedLists , templateName}) => (
                 ))}
               </ul>
             </div>
-          ) : id === "3" ? ( // Check for third node
+          ) : id === "3" ? (
             <div className="flex items-center space-x-2">
               <HiMail className="text-blue-500" size={20} />
-              email
-              <span>{templateName}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {templateName || "Email Template"}
+              </span>
+            </div>
+          ) : id === "node-4" ? (
+            <div className="flex flex-row gap-3 items-center space-y-1">
+              <FaClock className="text-gray-500 w-5 h-5" />{" "}
+              {/* Fixed icon size */}
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-700">Delay</span>
+                <div className="text-sm font-medium text-gray-700">
+                  {waitDuration} {waitType}
+                </div>
+              </div>
+            </div>
+          ) : id === "node-5" ? (
+            <div className="flex flex-col items-center space-y-2">
+              <div className="flex items-center space-x-2">
+                <HiMail className="text-blue-500" size={20} />
+                <span className="text-sm font-medium text-gray-700">
+                  {emailTemplate || "Email Template"}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Send Email As
+                </span>
+                {/* Display the sendEmailAs value */}
+                <span className="text-sm text-gray-700">
+                  {sendEmailAs || "Not Provided"}
+                </span>
+              </div>
             </div>
           ) : (
             <div>{data.label}</div>
@@ -63,6 +109,7 @@ const CustomNode = ({ data, id, onNodeClick, selectedLists , templateName}) => (
     )}
   </div>
 );
+
 
 const initialNodes = [
   {
@@ -84,22 +131,13 @@ const initialNodes = [
     position: { x: 250, y: 170 },
   },
   {
-    id: "3", // Added third node
-    type: "custom",
-    data: {
-      label: "Cold Email",
-      isLastNode: false,
-    },
-    position: { x: 250, y: 290 },
-  },
-  {
-    id: "4", // This becomes the last node with plus button
+    id: "3",
     type: "custom",
     data: {
       label: "Add Next Step",
       isLastNode: true,
     },
-    position: { x: 250, y: 450 },
+    position: { x: 250, y: 290 },
   },
 ];
 
@@ -118,13 +156,6 @@ const initialEdges = [
     type: "custom",
     animated: true,
   },
-  {
-    id: "edge-3-4",
-    source: "3",
-    target: "4",
-    type: "custom",
-    animated: true,
-  },
 ];
 
 const SequenceFlow = () => {
@@ -132,9 +163,19 @@ const SequenceFlow = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isPopupOpen2, setIsPopupOpen2] = useState(false);
+  const [isPopupOpen3, setIsPopupOpen3] = useState(false);
   const { selectedLists } = useSelector((state) => state.reactFlow);
   const { templateName } = useSelector((state) => state.emailList);
-
+  const { waitDuration } = useSelector((state) => state.time);
+  const { waitType } = useSelector((state) => state.time);
+  const { emailTemplate } = useSelector((state) => state.emailFollowus);
+  const { sendEmailAs } = useSelector((state) => state.emailFollowus);
+  // console.log(templateName, "template");
+  // console.log(waitDuration, "duration");
+  // console.log(waitType, "type");
+  console.log(emailTemplate, "emailTemplate");
+  console.log(sendEmailAs, "sendEmailAs");
   const addNode = useCallback(() => {
     setNodes((nds) => {
       const updatedNodes = nds.map((node) => ({
@@ -151,11 +192,22 @@ const SequenceFlow = () => {
         y: lastNode.position.y + 120,
       };
 
+      // Get the new node number
+      const nodeNumber = nds.length + 1;
+
+      // Set label based on node number
+      let label;
+      if (nodeNumber === 3) {
+        label = "Email Template";
+      } else {
+        label = `Step ${nodeNumber}`;
+      }
+
       const newNode = {
-        id: `node-${nds.length + 1}`,
+        id: `node-${nodeNumber}`,
         type: "custom",
         data: {
-          label: `Step ${nds.length + 1}`,
+          label: label,
           isLastNode: true,
           onAdd: addNode,
         },
@@ -179,11 +231,15 @@ const SequenceFlow = () => {
 
   const onNodeClick = (id) => {
     console.log(id, "Node clicked");
-    
+
     if (id === "1") {
       setIsModalOpen(true);
-    } else if (id === "3") { // Changed to check for node "3"
+    } else if (id === "3") {
       setIsPopupOpen(true);
+    } else if (id === "node-4") {
+      setIsPopupOpen2(true);
+    } else if (id === "node-5") {
+      setIsPopupOpen3(true);
     }
   };
 
@@ -206,6 +262,10 @@ const SequenceFlow = () => {
         onNodeClick={onNodeClick}
         selectedLists={selectedLists}
         templateName={templateName}
+        waitDuration={waitDuration}
+        waitType={waitType}
+        sendEmailAs={sendEmailAs}
+        emailTemplate={emailTemplate}
       />
     ),
   };
@@ -232,7 +292,15 @@ const SequenceFlow = () => {
         <SourceBlockModal onClose={() => setIsModalOpen(false)} />
       )}
 
-      <AddBlocksPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+      <AddBlocksPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+      />
+      <Time isOpen={isPopupOpen2} onClose={() => setIsPopupOpen2(false)} />
+      <Email2Followup
+        isOpen={isPopupOpen3}
+        onClose={() => setIsPopupOpen3(false)}
+      />
     </div>
   );
 };
