@@ -9,11 +9,8 @@ const LeadsListModal = ({ onClose, onInsert }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLists, setSelectedListsState] = useState([]); // local state to hold selected lists
   const [lists] = useState([
-    "Alpha Leads",
-    "Beta Contacts",
-    "Gamma Prospects",
-    "Delta Clients",
-    "Epsilon Leads",
+    "sp3887804@gmail.com",
+    "vinit15012003@gmail.com",
   ]);
 
   const dispatch = useDispatch(); // Redux dispatcher
