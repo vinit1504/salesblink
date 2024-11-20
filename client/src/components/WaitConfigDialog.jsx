@@ -2,19 +2,19 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { setTime } from "./../store/time/time"; // Import the action
+import { setTime } from "./../store/time/time"; // Import the action to store time in Redux
 
 const WaitConfigDialog = ({ isOpen, onClose }) => {
-  const [duration, setDuration] = useState('');
-  const [waitType, setWaitType] = useState('Days');
-  const dispatch = useDispatch(); // Access the Redux dispatch function
+  const [duration, setDuration] = useState('');  // State for storing the wait duration input
+  const [waitType, setWaitType] = useState('Days');  // State for storing the wait type (Days, Hours, Minutes)
+  const dispatch = useDispatch(); // Access the Redux dispatch function to update the state
 
-  if (!isOpen) return null;
+  if (!isOpen) return null;  // If the dialog is not open, don't render anything
 
   const handleInsert = () => {
-    // Dispatch the action to store the time in Redux
+    // Dispatch the action to store the wait configuration (duration and type) in the Redux store
     dispatch(setTime({ waitDuration: duration, waitType }));
-    onClose(); // Close the dialog after storing the data
+    onClose();  // Close the dialog after inserting the data
   };
 
   return (
@@ -23,7 +23,7 @@ const WaitConfigDialog = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-semibold">Wait</h2>
           <button
-            onClick={onClose}
+            onClick={onClose}  // Close the dialog when the close button is clicked
             className="text-gray-500 hover:bg-gray-100 p-2 rounded-lg"
             aria-label="Close dialog"
           >
@@ -44,7 +44,7 @@ const WaitConfigDialog = ({ isOpen, onClose }) => {
                 className="w-full p-2 border rounded-md"
                 placeholder="Enter wait duration"
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => setDuration(e.target.value)}  // Update duration state when the input changes
               />
             </div>
 
@@ -55,7 +55,7 @@ const WaitConfigDialog = ({ isOpen, onClose }) => {
               <select
                 className="w-full p-2 border rounded-md bg-white"
                 value={waitType}
-                onChange={(e) => setWaitType(e.target.value)}
+                onChange={(e) => setWaitType(e.target.value)}  // Update waitType state when the select option changes
               >
                 <option>Days</option>
                 <option>Hours</option>
@@ -67,7 +67,7 @@ const WaitConfigDialog = ({ isOpen, onClose }) => {
           <div className="mt-6 flex justify-end">
             <button
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={handleInsert} // Call the function to store data
+              onClick={handleInsert} // Insert the data into Redux and close the dialog
             >
               Insert
             </button>

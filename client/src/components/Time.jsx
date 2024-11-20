@@ -3,48 +3,52 @@ import { X } from "lucide-react";
 import WaitConfigDialog from "./WaitConfigDialog";
 
 const Time = ({ isOpen, onClose }) => {
+  // State to manage the opening of the WaitConfigDialog
   const [waitDialogOpen, setWaitDialogOpen] = useState(false);
 
+  // If both the main dialog and Wait dialog are closed, return null (render nothing)
   if (!isOpen && !waitDialogOpen) return null;
 
+  // Define the blocks (actions, conditions, other actions) that will be displayed in the dialog
   const blocks = {
     actions: [
       {
-        icon: "📧",
-        title: "Cold Email",
-        description: "Send an email to a lead.",
-        category: "actions",
-        bgColor: "bg-purple-100",
+        icon: "📧", // Icon for "Cold Email"
+        title: "Cold Email", // Title of the action
+        description: "Send an email to a lead.", // Description of the action
+        category: "actions", // Category of this block
+        bgColor: "bg-purple-100", // Background color for styling
       },
       {
-        icon: "✓",
-        title: "Task",
-        description: "Schedule a manual task.",
+        icon: "✓", // Icon for "Task"
+        title: "Task", // Title of the action
+        description: "Schedule a manual task.", // Description of the action
         category: "actions",
         bgColor: "bg-purple-100",
       },
     ],
     conditions: [
       {
-        icon: "⌛",
-        title: "Wait",
-        description: "Add a delay between blocks.",
+        icon: "⌛", // Icon for "Wait"
+        title: "Wait", // Title of the condition
+        description: "Add a delay between blocks.", // Description of the condition
         category: "conditions",
-        bgColor: "bg-gray-100",
+        bgColor: "bg-gray-100", // Background color for styling
         onClick: () => {
-          onClose(); // Close the main dialog
-          setWaitDialogOpen(true); // Open the Wait dialog
+          // Close the main dialog and open the WaitConfigDialog
+          onClose();
+          setWaitDialogOpen(true);
         },
       },
       {
-        icon: "🔍",
+        icon: "🔍", // Icon for "If/Else (Rules)"
         title: "If/Else (Rules)",
         description: "Route leads through the sequence based on events.",
         category: "conditions",
         bgColor: "bg-white",
       },
       {
-        icon: "🔀",
+        icon: "🔀", // Icon for "A/B Split"
         title: "A/B Split",
         description: "Equally split contacts into two separate flows.",
         category: "conditions",
@@ -53,28 +57,28 @@ const Time = ({ isOpen, onClose }) => {
     ],
     otherActions: [
       {
-        icon: "📋",
+        icon: "📋", // Icon for "Move Lead to List"
         title: "Move Lead to List",
         description: "",
         category: "otherActions",
         bgColor: "bg-white",
       },
       {
-        icon: "📦",
+        icon: "📦", // Icon for "Archive Lead"
         title: "Archive Lead",
         description: "",
         category: "otherActions",
         bgColor: "bg-white",
       },
       {
-        icon: "❌",
+        icon: "❌", // Icon for "End Sequence"
         title: "End Sequence",
         description: "Terminate the current sequence.",
         category: "otherActions",
         bgColor: "bg-red-100",
       },
       {
-        icon: "🚫",
+        icon: "🚫", // Icon for "Unsubscribe Lead"
         title: "Unsubscribe Lead",
         description: "Remove the lead from further sequences.",
         category: "otherActions",
@@ -83,21 +87,23 @@ const Time = ({ isOpen, onClose }) => {
     ],
   };
 
+  // Handle clicks outside the dialog (backdrop) to close the modal
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // Only render the main dialog if it's open and Wait dialog is closed
+  // Only render the main dialog if it's open and the WaitConfigDialog is not open
   const renderMainDialog = isOpen && !waitDialogOpen;
 
   return (
     <>
+      {/* Main dialog is rendered only if the modal is open and WaitConfigDialog is closed */}
       {renderMainDialog && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-          onClick={handleBackdropClick}
+          onClick={handleBackdropClick} // Close the modal when clicking outside
         >
           <div className="bg-white rounded-lg w-full max-w-2xl">
             <div className="flex items-center justify-between p-4 border-b">
@@ -109,7 +115,7 @@ const Time = ({ isOpen, onClose }) => {
               </div>
               <button
                 className="text-gray-500 hover:bg-gray-100 p-2 rounded-lg"
-                onClick={onClose}
+                onClick={onClose} // Close the modal when clicking on the close button
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />
@@ -128,7 +134,7 @@ const Time = ({ isOpen, onClose }) => {
                     <div
                       key={index}
                       className="flex items-start gap-4 p-4 rounded-lg border cursor-pointer hover:border-blue-500"
-                      onClick={block.onClick}
+                      onClick={block.onClick} // Trigger the block's onClick action
                     >
                       <div className={`p-2 ${block.bgColor} rounded-lg`}>
                         <span className="text-2xl">{block.icon}</span>
@@ -150,7 +156,7 @@ const Time = ({ isOpen, onClose }) => {
                     <div
                       key={index}
                       className="flex items-start gap-4 p-4 rounded-lg border cursor-pointer hover:border-blue-500"
-                      onClick={block.onClick}
+                      onClick={block.onClick} // Trigger the block's onClick action
                     >
                       <div className={`p-2 ${block.bgColor} rounded-lg`}>
                         <span className="text-2xl">{block.icon}</span>
@@ -172,7 +178,7 @@ const Time = ({ isOpen, onClose }) => {
                     <div
                       key={index}
                       className="flex items-start gap-4 p-4 rounded-lg border cursor-pointer hover:border-blue-500"
-                      onClick={block.onClick}
+                      onClick={block.onClick} // Trigger the block's onClick action
                     >
                       <div className={`p-2 ${block.bgColor} rounded-lg`}>
                         <span className="text-2xl">{block.icon}</span>
@@ -180,9 +186,7 @@ const Time = ({ isOpen, onClose }) => {
                       <div>
                         <h3 className="font-medium">{block.title}</h3>
                         {block.description && (
-                          <p className="text-gray-600 text-sm">
-                            {block.description}
-                          </p>
+                          <p className="text-gray-600 text-sm">{block.description}</p>
                         )}
                       </div>
                     </div>
@@ -194,9 +198,10 @@ const Time = ({ isOpen, onClose }) => {
         </div>
       )}
 
+      {/* WaitConfigDialog is rendered when waitDialogOpen state is true */}
       <WaitConfigDialog 
         isOpen={waitDialogOpen} 
-        onClose={() => setWaitDialogOpen(false)} 
+        onClose={() => setWaitDialogOpen(false)} // Close the WaitConfigDialog when the onClose is triggered
       />
     </>
   );

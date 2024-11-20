@@ -2,30 +2,37 @@ import { useState } from "react";
 import EmailStatus from "./EmailStatus";
 import { CheckCircle, Filter, Mail, Network, X } from "lucide-react";
 
+// Main component for adding blocks to a sequence
 const Email2Followup = ({ isOpen, onClose }) => {
+    // State to manage cold email popup visibility
     const [isColdEmailOpen, setIsColdEmailOpen] = useState(false);
     
+    // Render nothing if both popups are closed
     if (!isOpen && !isColdEmailOpen) return null;
   
+    // Handler to close the main popup
     const handleClose = () => {
       onClose();
     };
   
+    // Handler to open cold email popup and close main popup
     const handleColdEmailClick = () => {
       setIsColdEmailOpen(true);
       onClose();
     };
   
+    // Handler to close cold email popup
     const handleColdEmailClose = () => {
       setIsColdEmailOpen(false);
     };
   
     return (
       <>
+        {/* Main popup overlay */}
         {isOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
             <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg h-[90vh]">
-              {/* Header */}
+              {/* Popup header with title and close button */}
               <div className="flex justify-between items-center p-4 border-b">
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-semibold">Add Blocks</h2>
@@ -43,17 +50,18 @@ const Email2Followup = ({ isOpen, onClose }) => {
                 </button>
               </div>
               
-              {/* Content */}
+              {/* Popup content area */}
               <div className="p-6">
                 <p className="text-gray-600 mb-6">
                   Click on a block to configure and add it in sequence.
                 </p>
       
                 <div className="space-y-6">
-                  {/* Outreach Section */}
+                  {/* Outreach Section with configurable blocks */}
                   <section>
                     <h3 className="text-lg font-medium mb-4">Outreach</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Cold Email block */}
                       <div 
                         className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                         onClick={handleColdEmailClick}
@@ -69,6 +77,7 @@ const Email2Followup = ({ isOpen, onClose }) => {
                         </div>
                       </div>
       
+                      {/* Task block */}
                       <div 
                         className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                         onClick={() => console.log('Task clicked')}
@@ -86,10 +95,11 @@ const Email2Followup = ({ isOpen, onClose }) => {
                     </div>
                   </section>
       
-                  {/* Conditions Section */}
+                  {/* Conditions Section with routing options */}
                   <section>
                     <h3 className="text-lg font-medium mb-4">Conditions</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* If/Else (Rules) block */}
                       <div 
                         className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                         onClick={() => console.log('If/Else clicked')}
@@ -105,6 +115,7 @@ const Email2Followup = ({ isOpen, onClose }) => {
                         </div>
                       </div>
       
+                      {/* A/B Split block */}
                       <div 
                         className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                         onClick={() => console.log('A/B Split clicked')}
@@ -127,7 +138,7 @@ const Email2Followup = ({ isOpen, onClose }) => {
           </div>
         )}
   
-        {/* Cold Email Popup */}
+        {/* Conditional rendering of Cold Email Status popup */}
         {isColdEmailOpen && (
           <EmailStatus 
             isOpen={isColdEmailOpen}

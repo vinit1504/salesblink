@@ -22,100 +22,18 @@ import Time from "./Time";
 
 import { FaClock } from "react-icons/fa"; // Import clock icon
 import Email2Followup from "./Email2Followup";
-
-const CustomNode = ({
-  data,
-  id,
-  onNodeClick,
-  selectedLists,
-  templateName,
-  waitDuration,
-  waitType,
-  emailTemplate,
-  sendEmailAs
-}) => (
-  <div
-    className={`relative p-4 ${data.isLastNode ? "bg-transparent" : "bg-white border border-gray-300"
-      } rounded-lg w-52 text-center`}
-    onClick={() => onNodeClick(id)}
-  >
-    {data.isLastNode ? (
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <button
-          className="w-8 h-8 border-2 border-blue-400 text-blue-400 rounded flex items-center justify-center hover:bg-blue-50 transition-colors"
-          onClick={data.onAdd}
-        >
-          <span className="text-xl leading-none">+</span>
-        </button>
-      </div>
-    ) : (
-      <>
-        <Handle type="target" position={Position.Top} />
-        <div className="relative mx-auto flex justify-center items-center">
-          {id === "1" && selectedLists.length > 0 ? (
-            <div className="flex items-center space-x-2">
-              <FaUserPlus className="text-red-500" size={20} />
-              <ul className="text-left">
-                {selectedLists.map((item, index) => (
-                  <li key={index} className="text-sm">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : id === "3" ? (
-            <div className="flex items-center space-x-2">
-              <HiMail className="text-blue-500" size={20} />
-              <span className="text-sm font-medium text-gray-700">
-                {templateName || "Email Template"}
-              </span>
-            </div>
-          ) : id === "node-4" ? (
-            <div className="flex flex-row gap-3 items-center space-y-1">
-              <FaClock className="text-gray-500 w-5 h-5" />{" "}
-              {/* Fixed icon size */}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-700">Delay</span>
-                <div className="text-sm font-medium text-gray-700">
-                  {waitDuration} {waitType}
-                </div>
-              </div>
-            </div>
-          ) : id === "node-5" ? (
-            <div className="flex flex-col items-center space-y-2">
-              <div className="flex items-center space-x-2">
-                <HiMail className="text-blue-500" size={20} />
-                <span className="text-sm font-medium text-gray-700">
-                  {emailTemplate || "Email Template"}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Send Email As
-                </span>
-                {/* Display the sendEmailAs value */}
-                <span className="text-sm text-gray-700">
-                  {sendEmailAs || "Not Provided"}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div>{data.label}</div>
-          )}
-        </div>
-        <Handle type="source" position={Position.Bottom} />
-      </>
-    )}
-  </div>
-);
+import CustomNode from "./CustomeNode";
 
 const SequenceFlow = () => {
+  // State for storing nodes, edges, and modal/popup visibility
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPopupOpen2, setIsPopupOpen2] = useState(false);
   const [isPopupOpen3, setIsPopupOpen3] = useState(false);
+
+  // Fetch data from Redux store for selected lists, email template, and wait duration
   const { selectedLists } = useSelector((state) => state.reactFlow);
   const { templateName } = useSelector((state) => state.emailList);
   const { waitDuration } = useSelector((state) => state.time);
@@ -123,16 +41,17 @@ const SequenceFlow = () => {
   const { emailTemplate } = useSelector((state) => state.emailFollowus);
   const { sendEmailAs } = useSelector((state) => state.emailFollowus);
 
-  // Load nodes and edges from localStorage on page load
+  // Load nodes and edges from localStorage on page load if available
   useEffect(() => {
     const savedNodes = localStorage.getItem("nodes");
     const savedEdges = localStorage.getItem("edges");
 
+    // If data exists in localStorage, set it to state, otherwise use default data
     if (savedNodes && savedEdges) {
       setNodes(JSON.parse(savedNodes));
       setEdges(JSON.parse(savedEdges));
     } else {
-      // Initial data if nothing is stored in localStorage
+      // Default node and edge data
       const initialNodes = [
         {
           id: "1",
@@ -180,12 +99,13 @@ const SequenceFlow = () => {
         },
       ];
 
+      // Set the default nodes and edges
       setNodes(initialNodes);
       setEdges(initialEdges);
     }
   }, []);
 
-  // Save nodes and edges to localStorage when they change
+  // Save nodes and edges to localStorage whenever they change
   useEffect(() => {
     if (nodes.length > 0 && edges.length > 0) {
       localStorage.setItem("nodes", JSON.stringify(nodes));
@@ -193,6 +113,7 @@ const SequenceFlow = () => {
     }
   }, [nodes, edges]);
 
+  // Function to add a new node
   const addNode = useCallback(() => {
     setNodes((nds) => {
       const updatedNodes = nds.map((node) => ({
@@ -209,16 +130,9 @@ const SequenceFlow = () => {
         y: lastNode.position.y + 120,
       };
 
-      // Get the new node number
+      // Get the new node number and set label
       const nodeNumber = nds.length + 1;
-
-      // Set label based on node number
-      let label;
-      if (nodeNumber === 3) {
-        label = "Email Template";
-      } else {
-        label = `Step ${nodeNumber}`;
-      }
+      let label = nodeNumber === 3 ? "Email Template" : `Step ${nodeNumber}`;
 
       const newNode = {
         id: `node-${nodeNumber}`,
@@ -226,11 +140,12 @@ const SequenceFlow = () => {
         data: {
           label: label,
           isLastNode: true,
-          onAdd: addNode,
+          onAdd: addNode, // Set the add function to new nodes
         },
         position: newNodePosition,
       };
 
+      // Add the edge to the new node
       setEdges((eds) => [
         ...eds,
         {
@@ -242,13 +157,15 @@ const SequenceFlow = () => {
         },
       ]);
 
-      return [...updatedNodes, newNode];
+      return [...updatedNodes, newNode]; // Add new node to the state
     });
   }, [setNodes, setEdges]);
 
+  // Handle node clicks to open appropriate modals
   const onNodeClick = (id) => {
     console.log(id, "Node clicked");
 
+    // Open modals based on clicked node id
     if (id === "1") {
       setIsModalOpen(true);
     } else if (id === "3") {
@@ -260,20 +177,22 @@ const SequenceFlow = () => {
     }
   };
 
+  // Update all nodes with the addNode function as an onAdd prop
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => ({
         ...node,
-        data: { ...node.data, onAdd: addNode },
+        data: { ...node.data, onAdd: addNode }, // Assign the addNode function to all nodes
       }))
     );
   }, [addNode, setNodes]);
 
+  // Define custom node types
   const nodeTypes = {
     custom: (props) => (
       <CustomNode
         {...props}
-        onNodeClick={onNodeClick}
+        onNodeClick={onNodeClick} // Pass the onNodeClick function to CustomNode
         selectedLists={selectedLists}
         templateName={templateName}
         waitDuration={waitDuration}
@@ -286,6 +205,7 @@ const SequenceFlow = () => {
 
   return (
     <div className="w-full h-96 bg-gray-50">
+      {/* Render ReactFlow component with nodes, edges, and controls */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -299,14 +219,24 @@ const SequenceFlow = () => {
         <Background />
       </ReactFlow>
 
-      {isModalOpen && <SourceBlockModal onClose={() => setIsModalOpen(false)} />}
-      <AddBlocksPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+      {/* Conditional rendering for modals and popups */}
+      {isModalOpen && (
+        <SourceBlockModal onClose={() => setIsModalOpen(false)} />
+      )}
+      <AddBlocksPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+      />
       <Time isOpen={isPopupOpen2} onClose={() => setIsPopupOpen2(false)} />
-      <Email2Followup isOpen={isPopupOpen3} onClose={() => setIsPopupOpen3(false)} />
+      <Email2Followup
+        isOpen={isPopupOpen3}
+        onClose={() => setIsPopupOpen3(false)}
+      />
     </div>
   );
 };
 
+// Wrapper component to provide ReactFlow context
 const FlowWrapper = () => (
   <ReactFlowProvider>
     <SequenceFlow />

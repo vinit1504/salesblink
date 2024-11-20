@@ -2,11 +2,13 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { UserPlus, Zap, X, Users } from "lucide-react";
-import LeadsListModal from "./LeadsListModal";
+import LeadsListModal from "./LeadsListModal"; // Import the LeadsListModal component
 
+// SourceBlockModal component is responsible for displaying the source block configuration modal
 const SourceBlockModal = ({ onClose }) => {
-  const [activeModal, setActiveModal] = useState("sourceBlock"); // Track active modal
+  const [activeModal, setActiveModal] = useState("sourceBlock"); // Track the active modal to control what content is displayed
 
+  // Function to close the SourceBlockModal and trigger the passed onClose function if provided
   const closeSourceBlockModal = () => {
     setActiveModal(null); // Close the SourceBlockModal
     if (onClose) onClose(); // Trigger the onClose prop if provided
@@ -14,7 +16,7 @@ const SourceBlockModal = ({ onClose }) => {
 
   return (
     <>
-      {/* Render the SourceBlockModal */}
+      {/* Render the SourceBlockModal when activeModal is 'sourceBlock' */}
       {activeModal === "sourceBlock" && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
           <div className="bg-white rounded-lg w-full max-w-[800px] h-[90vh] overflow-y-auto relative">
@@ -30,6 +32,7 @@ const SourceBlockModal = ({ onClose }) => {
                     will be added to sequence automatically.
                   </p>
                 </div>
+                {/* Close button to exit the modal */}
                 <button
                   onClick={closeSourceBlockModal} // Close the SourceBlockModal when clicking close
                   className="text-gray-400 hover:text-gray-600"
@@ -43,10 +46,10 @@ const SourceBlockModal = ({ onClose }) => {
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-4">Sources</h3>
               <div className="grid grid-cols-2 gap-4">
-                {/* Leads from List(s) */}
+                {/* Each source option is clickable to set the source of leads */}
                 <div
                   className="border rounded-lg p-4 hover:border-blue-500 cursor-pointer"
-                  onClick={() => setActiveModal("leadsList")}
+                  onClick={() => setActiveModal("leadsList")} // Switch to LeadsList modal when clicked
                 >
                   <div className="flex items-start space-x-3">
                     <div className="bg-pink-100 p-2 rounded-lg">
@@ -62,6 +65,8 @@ const SourceBlockModal = ({ onClose }) => {
                     </div>
                   </div>
                 </div>
+
+                {/* Another source option for segmenting lists */}
                 <div className="border rounded-lg p-4 hover:border-blue-500 cursor-pointer">
                   <div className="flex items-start space-x-3">
                     <div className="bg-pink-100 p-2 rounded-lg">
@@ -79,7 +84,7 @@ const SourceBlockModal = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* Lead from CRM Integration */}
+                {/* Option to pull leads from CRM Integration */}
                 <div className="border rounded-lg p-4 hover:border-blue-500 cursor-pointer">
                   <div className="flex items-start space-x-3">
                     <div className="bg-pink-100 p-2 rounded-lg">
@@ -96,7 +101,7 @@ const SourceBlockModal = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* Other Options */}
+                {/* Another option for CRM integration */}
                 <div className="border rounded-lg p-4 hover:border-blue-500 cursor-pointer">
                   <div className="flex items-start space-x-3">
                     <div className="bg-pink-100 p-2 rounded-lg">
@@ -118,7 +123,7 @@ const SourceBlockModal = ({ onClose }) => {
         </div>
       )}
 
-      {/* Render the LeadsListModal */}
+      {/* Render the LeadsListModal when activeModal is 'leadsList' */}
       {activeModal === "leadsList" && (
         <LeadsListModal onClose={closeSourceBlockModal} />
       )}
