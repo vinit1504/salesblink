@@ -1,18 +1,11 @@
 import mongoose from "mongoose";
 
-// Function to connect to the MongoDB database
 export const DataBaseConnect = async () => {
   try {
-    // Attempt to connect to the MongoDB using the URI from the environment variables
-    await mongoose.connect(process.env.MONGO_URI);
-    
-    // Log a success message if the connection is established
+    await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log("Database connection successful");
   } catch (error) {
-    // Log an error message if the connection fails
-    console.log("Database connection failed");
-    
-    // Exit the process with a failure code if the connection can't be established
+    console.error("Database connection failed:", error.message); // Log the error message for better debugging
     process.exit(1);
   }
 };
