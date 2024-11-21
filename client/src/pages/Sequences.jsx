@@ -31,6 +31,8 @@ const Sequence = () => {
     const savedData = localStorage.getItem("sequenceData");
     if (savedData) {
       setSequenceData(JSON.parse(savedData));
+      
+      
     }
   }, []);
 

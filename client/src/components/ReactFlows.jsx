@@ -45,7 +45,7 @@ const SequenceFlow = () => {
   useEffect(() => {
     const savedNodes = localStorage.getItem("nodes");
     const savedEdges = localStorage.getItem("edges");
-
+   
     // If data exists in localStorage, set it to state, otherwise use default data
     if (savedNodes && savedEdges) {
       setNodes(JSON.parse(savedNodes));
