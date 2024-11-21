@@ -9,7 +9,7 @@ dotenv.config();
 // Initialize Agenda with MongoDB connection settings
 const agenda = new Agenda({
   db: {
-    address: "mongodb://localhost:27017/emailService", // Database URL
+    address: "mongodb+srv://vinit1222003:root@cluster0.v4xuz.mongodb.net/emailService", // Database URL
     collection: "agendaJobs", // Collection to store scheduled jobs
   },
 });
