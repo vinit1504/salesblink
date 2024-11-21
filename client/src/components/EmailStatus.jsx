@@ -13,7 +13,7 @@ const EmailStatus = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   
   // Accessing the current email template and sendEmailAs values from Redux state
-  const { emailTemplate, sendEmailAs } = useSelector((state) => state.emailFollowus);
+  const { emailTemplate, sendEmailAs } = useSelector((state) => state.emailFollowup);
 
   // Dummy Data for the available email templates and options for "Send Email As"
   const emailTemplates = ['Template 1', 'Template 2', 'Template 3'];
