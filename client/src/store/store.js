@@ -11,7 +11,7 @@ const store = configureStore({
     reactFlow: reactFlowReducer,  
     emailList: emailTemplateReducer,  // Renamed emailList to match the earlier provided slice
     time: timeReducer,
-    emailFollowus: emailFowlloupReducer1 // Ensure the reducer key matches the slice name
+    emailFollowup: emailFowlloupReducer1 // Ensure the reducer key matches the slice name
   },
 });
 

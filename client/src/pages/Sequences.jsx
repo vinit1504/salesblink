@@ -22,8 +22,8 @@ const Sequence = () => {
 
   // Redux selectors to get the necessary data
   const { selectedLists } = useSelector((state) => state.reactFlow);
-  const { emailTemplate: body } = useSelector((state) => state.emailFollowus);
-  const { sendEmailAs: emailSubject } = useSelector((state) => state.emailFollowus);
+  const { emailTemplate: body } = useSelector((state) => state.emailFollowup);
+  const { sendEmailAs: emailSubject } = useSelector((state) => state.emailFollowup);
   const { waitDuration } = useSelector((state) => state.time);
 
   // useEffect to load saved sequence data from localStorage when the component mounts

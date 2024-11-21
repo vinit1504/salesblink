@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setEmailTemplate, setSendEmailAs } from './../store/emailFollowup/emailfollowup'; // Import the actions
+import { setEmailTemplate, setSendEmailAs } from './../store/emailFollow2/emailFollow2.js'; // Import the actions
 
 // Component to handle Email Status popup/modal
 const EmailStatus = ({ isOpen, onClose }) => {

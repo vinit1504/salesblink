@@ -38,8 +38,8 @@ const SequenceFlow = () => {
   const { templateName } = useSelector((state) => state.emailList);
   const { waitDuration } = useSelector((state) => state.time);
   const { waitType } = useSelector((state) => state.time);
-  const { emailTemplate } = useSelector((state) => state.emailFollowus);
-  const { sendEmailAs } = useSelector((state) => state.emailFollowus);
+  const { emailTemplate } = useSelector((state) => state.emailFollowup);
+  const { sendEmailAs } = useSelector((state) => state.emailFollowup);
 
   // Load nodes and edges from localStorage on page load if available
   useEffect(() => {
