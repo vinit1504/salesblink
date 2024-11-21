@@ -106,12 +106,12 @@ const SequenceFlow = () => {
   }, []);
 
   // Save nodes and edges to localStorage whenever they change
-  useEffect(() => {
-    if (nodes.length > 0 && edges.length > 0) {
-      localStorage.setItem("nodes", JSON.stringify(nodes));
-      localStorage.setItem("edges", JSON.stringify(edges));
-    }
-  }, [nodes, edges]);
+  // useEffect(() => {
+  //   if (nodes.length > 0 && edges.length > 0) {
+  //     localStorage.setItem("nodes", JSON.stringify(nodes));
+  //     localStorage.setItem("edges", JSON.stringify(edges));
+  //   }
+  // }, [nodes, edges]);
 
   // Function to add a new node
   const addNode = useCallback(() => {
